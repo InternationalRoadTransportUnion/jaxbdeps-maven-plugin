@@ -44,7 +44,13 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 	 */
 	@Parameter
 	protected File bindingDirectory;
-
+	
+	/**
+	 * The episode file extension
+	 */
+	@Parameter(defaultValue = "xml")
+	protected String episodeFileExtension;
+	
 
 	@Override
 	protected ArtifactProcessor getArtifactProcessor() {
@@ -124,7 +130,7 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 					unpack(depArtifact, episodeTmpDir, META_INF_SUN_JAXB_EPISODE, null);
 					File ef = new File(episodeTmpDir, META_INF_SUN_JAXB_EPISODE);
 					if (ef.exists()) {
-						File df = new File(bindingDirectory, dep.getArtifactId()+"-episode.xml");
+						File df = new File(bindingDirectory, dep.getArtifactId()+"-episode."+ episodeFileExtension);
 						Source input = new StreamSource(ef);
 						Result output = new StreamResult(df);
 						try {
