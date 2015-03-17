@@ -48,6 +48,8 @@ public class CleanMojo extends AbstractJaxbDepMojo {
 						for (String file : files) {
 							if (! new File(directory, file).delete()) {
 								this.log.warn("Could not delete: "+file);
+							} else {
+								this.log.debug("Cleaning extracted file: "+file);
 							}
 						}
 						
@@ -74,8 +76,11 @@ public class CleanMojo extends AbstractJaxbDepMojo {
 
 			private void deleteFile(File file) {
 				if (file != null) {
-					if (! file.delete())
+					if (! file.delete()) {
 						this.log.warn("Could not delete: "+file);
+					} else { 
+						this.log.debug("Cleaning temporary file: "+file);
+					}
 				}
 			}
 			
