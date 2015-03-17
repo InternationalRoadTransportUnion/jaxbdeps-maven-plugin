@@ -39,11 +39,7 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 	@Parameter
 	protected Dependency[] skipEpisodeDependencies;
 
-	/**
-	 * The directory where to write episode files
-	 */
-	@Parameter
-	protected File bindingDirectory;
+
 	
 	/**
 	 * The episode file extension
@@ -60,6 +56,8 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 			Transformer transformer = null;
 			File extractedFilesFile;
 			List<String> extractedFiles;
+			List<String> episodeFiles;
+			File episodeFilesFile;
 			
 			Log log;
 			
@@ -83,6 +81,8 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 						Source xsl = new StreamSource(Thread.currentThread().getContextClassLoader().getResourceAsStream("ifexists.xsl"));
 
 						transformer = TransformerFactory.newInstance().newTransformer(xsl);
+						episodeFiles = new ArrayList<String>();
+						episodeFilesFile = new File(rundir, EPISODE_FILES);
 					} catch (TransformerException e) {
 						throw new MojoFailureException(e.getMessage(), e);
 					} catch (IOException e) {
@@ -142,6 +142,8 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 							} catch (IOException ioe) {
 								throw new MojoExecutionException(ioe.getMessage(), ioe);
 							}
+						} finally {
+							episodeFiles.add(df.getName());
 						}
 					}
 
@@ -150,9 +152,15 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 
 			public void shutdown() {
 				try {
-					FileOutputStream out = new FileOutputStream(extractedFilesFile);
-					IOUtils.writeLines(extractedFiles, null, out);
-
+					{
+						FileOutputStream out = new FileOutputStream(extractedFilesFile);
+						IOUtils.writeLines(extractedFiles, null, out);
+					}
+					if (episodeFilesFile != null) {
+						FileOutputStream out = new FileOutputStream(episodeFilesFile);
+						IOUtils.writeLines(episodeFiles, null, out);
+					}
+					
 					if (episodeTmpDir != null) {
 						FileUtils.deleteDirectory(episodeTmpDir);
 					} 

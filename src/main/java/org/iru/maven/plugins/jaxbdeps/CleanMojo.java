@@ -25,20 +25,28 @@ public class CleanMojo extends AbstractJaxbDepMojo {
 
 			Log log;
 			File extractedFilesFile;
+			File episodeFilesFile;
 			
 			@Override
 			public void setup(Log log) throws MojoFailureException {
 				
 				this.log = log;
 				
-				File extractedFilesFile = new File(rundir, EXTRACTED_FILES);
+				extractedFilesFile = deleteFileFiles(new File(rundir, EXTRACTED_FILES), outputDirectory);
 				
+				if (bindingDirectory != null)
+					episodeFilesFile = deleteFileFiles(new File(rundir, EPISODE_FILES), bindingDirectory);
+				
+			}
+
+			private File deleteFileFiles(File extractedFilesFile, File directory)
+					throws MojoFailureException {
 				if (extractedFilesFile.exists()) {
 					try {
 						@SuppressWarnings("unchecked")
 						List<String> files = IOUtils.readLines(new FileInputStream(extractedFilesFile));
 						for (String file : files) {
-							if (! new File(outputDirectory, file).delete()) {
+							if (! new File(directory, file).delete()) {
 								this.log.warn("Could not delete: "+file);
 							}
 						}
@@ -49,7 +57,7 @@ public class CleanMojo extends AbstractJaxbDepMojo {
 				} else {
 					extractedFilesFile = null;
 				}
-				
+				return extractedFilesFile;
 			}
 
 			@Override
@@ -60,9 +68,14 @@ public class CleanMojo extends AbstractJaxbDepMojo {
 
 			@Override
 			public void shutdown() throws MojoFailureException {
-				if (extractedFilesFile != null) {
-					if (! extractedFilesFile.delete())
-						this.log.warn("Could not delete: "+extractedFilesFile);
+				deleteFile(extractedFilesFile);
+				deleteFile(episodeFilesFile);
+			}
+
+			private void deleteFile(File file) {
+				if (file != null) {
+					if (! file.delete())
+						this.log.warn("Could not delete: "+file);
 				}
 			}
 			

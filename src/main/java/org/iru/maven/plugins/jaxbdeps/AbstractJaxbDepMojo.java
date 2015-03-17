@@ -34,10 +34,17 @@ public abstract class AbstractJaxbDepMojo extends AbstractDependencyMojo {
 	@Parameter
 	protected File outputDirectory;
 	
+	/**
+	 * The directory where to write episode files
+	 */
+	@Parameter
+	protected File bindingDirectory;
+	
 	@Parameter(defaultValue = "${project.build.directory}/jaxbdeps")
 	protected File rundir;
 	
 	protected static final String EXTRACTED_FILES = "extracted-files";
+	protected static final String EPISODE_FILES = "episode-files";
 
 	public AbstractJaxbDepMojo() {
 		super();
