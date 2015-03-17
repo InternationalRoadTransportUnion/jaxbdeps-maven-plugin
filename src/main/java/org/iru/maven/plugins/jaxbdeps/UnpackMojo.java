@@ -165,7 +165,7 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 						FileUtils.deleteDirectory(episodeTmpDir);
 					} 
 				} catch (IOException e) {
-					log.debug(e);
+					log.warn(e);
 				}
 			}
 		};
