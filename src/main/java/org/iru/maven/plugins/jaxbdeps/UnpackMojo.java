@@ -1,11 +1,14 @@
 package org.iru.maven.plugins.jaxbdeps;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -55,8 +58,8 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 			File episodeTmpDir = null;
 			Transformer transformer = null;
 			File extractedFilesFile;
-			List<String> extractedFiles;
-			List<String> episodeFiles;
+			Set<String> extractedFiles;
+			Set<String> episodeFiles;
 			File episodeFilesFile;
 			
 			Log log;
@@ -66,13 +69,21 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 				
 				rundir.mkdirs();
 				try {
-					FileUtils.cleanDirectory(rundir);
 					extractedFilesFile = new File(rundir, EXTRACTED_FILES);
+					extractedFiles = new LinkedHashSet<String>();
+					if (extractedFilesFile.exists()) {
+						@SuppressWarnings("unchecked")
+						List<String> lines = IOUtils.readLines(new FileInputStream(extractedFilesFile));
+						extractedFiles.addAll(lines);
+					} 
+
+					FileUtils.cleanDirectory(rundir);
+
 				} catch (IOException e) {
 					throw new MojoFailureException(e.getMessage(), e);
 				}
 
-				extractedFiles = new ArrayList<String>();
+				
 				
 				if (bindingDirectory != null) {
 					try {
@@ -81,8 +92,14 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 						Source xsl = new StreamSource(Thread.currentThread().getContextClassLoader().getResourceAsStream("ifexists.xsl"));
 
 						transformer = TransformerFactory.newInstance().newTransformer(xsl);
-						episodeFiles = new ArrayList<String>();
+						episodeFiles = new LinkedHashSet<String>();
 						episodeFilesFile = new File(rundir, EPISODE_FILES);
+						if (episodeFilesFile.exists()) {
+							@SuppressWarnings("unchecked")
+							List<String> lines = IOUtils.readLines(new FileInputStream(episodeFilesFile));
+							episodeFiles.addAll(lines);
+						} 
+						
 					} catch (TransformerException e) {
 						throw new MojoFailureException(e.getMessage(), e);
 					} catch (IOException e) {
@@ -108,8 +125,13 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 					for (String newFile : newFiles) {
 						File dest = new File(outputDirectory, newFile);
 						dest.getParentFile().mkdirs();
-						if (new File(rundir, newFile).renameTo(dest)) 
-							extractedFiles.add(newFile);
+						File file = new File(rundir, newFile);
+						if (! extractedFiles.contains(newFile) || ! dest.exists()) {
+							if (file.renameTo(dest)) 
+								extractedFiles.add(newFile);
+						} else {
+							file.delete();
+						}
 					}
 					
 				}
@@ -131,19 +153,24 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 					File ef = new File(episodeTmpDir, META_INF_SUN_JAXB_EPISODE);
 					if (ef.exists()) {
 						File df = new File(bindingDirectory, dep.getArtifactId()+"-episode."+ episodeFileExtension);
-						Source input = new StreamSource(ef);
-						Result output = new StreamResult(df);
-						try {
-							transformer.transform(input, output);
-						} catch (TransformerException e) {
-							log.warn(e);
+						if (! episodeFiles.contains(df.getName()) || ! df.exists()) {
+							Source input = new StreamSource(ef);
+							Result output = new StreamResult(df);
 							try {
-								FileUtils.rename(ef, df);
-							} catch (IOException ioe) {
-								throw new MojoExecutionException(ioe.getMessage(), ioe);
+								transformer.transform(input, output);
+								ef.delete();
+							} catch (TransformerException e) {
+								log.warn(e);
+								try {
+									FileUtils.rename(ef, df);
+								} catch (IOException ioe) {
+									throw new MojoExecutionException(ioe.getMessage(), ioe);
+								}
+							} finally {
+								episodeFiles.add(df.getName());
 							}
-						} finally {
-							episodeFiles.add(df.getName());
+						} else {
+							ef.delete();
 						}
 					}
 
