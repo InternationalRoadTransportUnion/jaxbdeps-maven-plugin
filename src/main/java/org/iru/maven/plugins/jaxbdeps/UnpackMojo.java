@@ -28,7 +28,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.codehaus.plexus.util.FileUtils;
 
 @Mojo( name = "unpack", requiresDependencyResolution = ResolutionScope.COMPILE, 
-defaultPhase = LifecyclePhase.PROCESS_SOURCES, threadSafe = true )
+defaultPhase = LifecyclePhase.PROCESS_SOURCES, threadSafe = false )
 public class UnpackMojo extends AbstractJaxbDepMojo {
 
 	private static final String META_INF_SUN_JAXB_EPISODE = "META-INF/sun-jaxb.episode";

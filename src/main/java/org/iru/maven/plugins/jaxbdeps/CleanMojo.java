@@ -16,7 +16,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 @Mojo( name = "clean", requiresDependencyResolution = ResolutionScope.NONE, 
-defaultPhase = LifecyclePhase.PRE_CLEAN, threadSafe = true )
+defaultPhase = LifecyclePhase.PRE_CLEAN, threadSafe = false )
 public class CleanMojo extends AbstractJaxbDepMojo {
 
 	@Override
