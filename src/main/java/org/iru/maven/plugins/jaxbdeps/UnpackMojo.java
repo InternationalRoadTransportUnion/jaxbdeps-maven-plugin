@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,7 +49,6 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 	@Parameter(defaultValue = "xml")
 	protected String episodeFileExtension;
 	
-
 	@Override
 	protected ArtifactProcessor getArtifactProcessor() {
 		return new ArtifactProcessor() {
@@ -70,19 +68,10 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 				rundir.mkdirs();
 				try {
 					extractedFilesFile = new File(rundir, EXTRACTED_FILES);
-					extractedFiles = new LinkedHashSet<String>();
-					if (extractedFilesFile.exists()) {
-						@SuppressWarnings("unchecked")
-						List<String> lines = IOUtils.readLines(new FileInputStream(extractedFilesFile));
-						extractedFiles.addAll(lines);
-					} 
-
-					FileUtils.cleanDirectory(rundir);
-
+					extractedFiles = readFileLines(extractedFilesFile);
 				} catch (IOException e) {
 					throw new MojoFailureException(e.getMessage(), e);
 				}
-
 				
 				
 				if (bindingDirectory != null) {
@@ -92,13 +81,8 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 						Source xsl = new StreamSource(Thread.currentThread().getContextClassLoader().getResourceAsStream("ifexists.xsl"));
 
 						transformer = TransformerFactory.newInstance().newTransformer(xsl);
-						episodeFiles = new LinkedHashSet<String>();
 						episodeFilesFile = new File(rundir, EPISODE_FILES);
-						if (episodeFilesFile.exists()) {
-							@SuppressWarnings("unchecked")
-							List<String> lines = IOUtils.readLines(new FileInputStream(episodeFilesFile));
-							episodeFiles.addAll(lines);
-						} 
+						episodeFiles = readFileLines(episodeFilesFile);
 						
 					} catch (TransformerException e) {
 						throw new MojoFailureException(e.getMessage(), e);
@@ -106,6 +90,13 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 						throw new MojoFailureException(e.getMessage(), e);
 					}
 				}
+				
+				try {
+					FileUtils.cleanDirectory(rundir);
+				} catch (IOException e) {
+					throw new MojoFailureException(e.getMessage(), e);
+				}
+				
 			}
 
 			@Override
@@ -177,15 +168,13 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 				}
 			}
 
+			
+			
 			public void shutdown() {
 				try {
-					{
-						FileOutputStream out = new FileOutputStream(extractedFilesFile);
-						IOUtils.writeLines(extractedFiles, null, out);
-					}
+					writeFileLines(extractedFilesFile, extractedFiles);
 					if (episodeFilesFile != null) {
-						FileOutputStream out = new FileOutputStream(episodeFilesFile);
-						IOUtils.writeLines(episodeFiles, null, out);
+						writeFileLines(episodeFilesFile, episodeFiles);
 					}
 					
 					if (episodeTmpDir != null) {
@@ -195,7 +184,33 @@ public class UnpackMojo extends AbstractJaxbDepMojo {
 					log.warn(e);
 				}
 			}
+			
+			private Set<String> readFileLines(File file) throws IOException {
+				Set<String> lines = new LinkedHashSet<String>();
+				if (file.exists()) {
+					FileInputStream input = new FileInputStream(file);
+					try {
+						@SuppressWarnings("unchecked")
+						List<String> lineList = IOUtils.readLines(input);
+						lines.addAll(lineList);
+					} finally {
+						input.close();
+					}
+				} 
+				return lines;
+			}
+			
+			private void writeFileLines(File dest, Set<String> lines) throws IOException {
+				FileOutputStream out = new FileOutputStream(dest);
+				IOUtils.writeLines(lines, null, out);
+				out.flush();
+				out.close();
+			}
+
+
 		};
 
+		
+		
 	}
 }
