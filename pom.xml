@@ -2,6 +2,25 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.iru.maven.plugins</groupId>
   <artifactId>jaxbdeps-maven-plugin</artifactId>
+  <name>jaxbdeps-maven-plugin</name>
+  <description>Replacement for dependency and clean plugins, avoiding boilerplate configuration</description>
+  <url>https://github.com/InternationalRoadTransportUnion/jaxbdeps-maven-plugin</url>
+  <licenses>
+    <license>
+      <name>The Open Software License 3.0 (OSL-3.0)</name>
+      <url>https://opensource.org/licenses/OSL-3.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:https://github.com/InternationalRoadTransportUnion/jaxbdeps-maven-plugin.git</connection>
+    <url>https://github.com/InternationalRoadTransportUnion/jaxbdeps-maven-plugin</url>
+  </scm>
+  <developers>
+    <developer>
+      <email>Matthieu.Verbert@iru.org</email>
+    </developer>
+  </developers>
   <version>1.0.3-SNAPSHOT</version>
   <dependencies>
   	<dependency>
