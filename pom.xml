@@ -21,7 +21,7 @@
       <email>Matthieu.Verbert@iru.org</email>
     </developer>
   </developers>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.0.3</version>
   <dependencies>
   	<dependency>
   		<groupId>org.apache.maven</groupId>
